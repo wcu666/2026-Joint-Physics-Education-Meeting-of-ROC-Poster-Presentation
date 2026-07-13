@@ -1,57 +1,28 @@
-clc; close all; % ⚠️ 注意：千萬不能加 clear，否則貼好的數據會被清空
-
-% =======================================================
-% 🌟 實驗參數設定區（自動連動圖片與運算邏輯）
-% =======================================================
-tapeType  = 'Small Narrow Tape';       % 膠帶名稱
-delayTime = '100ms';                  % 延遲時間
-
-% 👇 --- 自訂波峰抓取條件 --- 👇
-time_start      = 6;   % 【條件 0：起始時間】只分析此時間 (秒) 之後的數據
-time_end        = 100;   % 【條件 0：結束時間】只分析此時間 (秒) 之前的數據 (若不限制可填入 Inf)
-
-min_force_limit = 3.7;   % 【條件 1：範圍以上】只抓力量大於此數值 (N) 的數據
-min_drop_value  = 0.1;   % 【條件 2：垂直落差】波峰到下一個谷底，力量至少要掉落多少 (N)
-% =======================================================
-
-% =======================================================
-% 📝 試算表偵測與自動開啟機制
-% =======================================================
+clc; close all; 
+tapeType  = 'Small Narrow Tape';       
+delayTime = '100ms';                  
+time_start      = 6;   
+time_end        = 100;   
+min_force_limit = 3.7;   
+min_drop_value  = 0.1;  
 if ~exist('raw_data', 'var') || isempty(raw_data)
     raw_data = []; 
     openvar('raw_data'); 
-    fprintf('\n====== 💡 請跟著以下步驟操作 ======\n');
-    fprintf('1️⃣ MATLAB 已經幫你打開 "raw_data" 的空白試算表視窗了。\n');
-    fprintf('2️⃣ 請去 Excel 複製你的「兩直欄」數字（左邊時間、右邊力量）。\n');
-    fprintf('3️⃣ 回到 MATLAB 試算表，點擊第一個格子 (1,1)，按 Ctrl+V 貼上。\n');
-    fprintf('4️⃣ 貼好後，**「再一次點擊執行 (Run)」** 這個程式即可！\n');
-    fprintf('==============================================\n\n');
     return; 
 end
-
-% =======================================================
-% 🚀 ② 數據處理與分析
-% =======================================================
 fprintf('偵測到 raw_data 數據，開始進行分析...\n');
-
 raw_time  = raw_data(:, 1);   
 raw_force = abs(raw_data(:, 2)); 
-
-% === ③ 處理時間延遲（自動對齊起點） ===
 force_threshold = 0.1; 
 start_idx = find(raw_force > force_threshold, 1, 'first');
 if isempty(start_idx), start_idx = 1; end
 t = raw_time(start_idx:end) - raw_time(start_idx);
 force = raw_force(start_idx:end);
-
-% === ④ 尋找臨界剝離力量 ===
 is_local_max = [false; ...
                 force(2:end-1) > force(1:end-2) & ...
                 force(2:end-1) > force(3:end); ...
-                false];
-            
+                false];            
 all_locs = find(is_local_max & (force > min_force_limit) & (t >= time_start) & (t <= time_end));
-
 valid_locs = [];
 for i = 1:length(all_locs)
     curr_loc = all_locs(i);
@@ -67,17 +38,15 @@ for i = 1:length(all_locs)
         valid_locs(end+1) = curr_loc; %#ok<AGROW>
     end
 end
-
-% 保底機制修正：在指定區間內找最大值
 if isempty(valid_locs)
     valid_range_idx = find((t >= time_start) & (t <= time_end));
     if ~isempty(valid_range_idx)
         [~, max_idx_in_range] = max(force(valid_range_idx));
         keep_locs = valid_range_idx(max_idx_in_range);
-        fprintf('⚠️ 注意：在 %.1f ~ %.1f 秒區間未偵測到符合落差的點，已抓取該區間最高點！\n', time_start, time_end);
+        fprintf('注意：在 %.1f ~ %.1f 秒區間未偵測到符合落差的點，已抓取該區間最高點！\n', time_start, time_end);
     else
         keep_locs = find(force == max(force), 1, 'last');
-        fprintf('⚠️ 警告：指定的時間區間內無數據，已全域抓取最後一個最高點！\n');
+        fprintf('警告：指定的時間區間內無數據，已全域抓取最後一個最高點！\n');
     end
 else
     keep_locs = valid_locs;
@@ -95,7 +64,7 @@ else
     num_peaks = 0;
 end
 
-% === ⑤ 顯示文字報告 ===
+% === 顯示文字報告 ===
 fprintf('\n--- 📊 膠帶黏滑現象 (Stick-Slip) 力量統計報告 ---\n');
 fprintf('分析時間區間：%.2f s 至 %.2f s\n', time_start, time_end);
 fprintf('目前設定條件：大於 %.2f N、落差至少 %.2f N\n', min_force_limit, min_drop_value);
