@@ -22,3 +22,14 @@ We designed a three-pulley traction system utilizing a stepper motor and a force
 <p align="center">
 <img width="600px" src="./Figures used in the poster/Experimental Setup.png" alt="Experimental Setup">
 </p>
+
+## Stripe Morphology
+
+The figure below illustrates the alternating stripe patterns observed within the stick-slip oscillation zone:
+
+*   **White Zone (Stick Phase):** The opaque band formed during the stick phase due to polymer fibrillation.
+*   **Transparent Zone (Slip Phase):** The clear band formed during the rapid slip phase as the tape detaches cleanly.
+
+<p align="center">
+<img width="600px" src="./Figures used in the poster/Transparent and white zone 's figure.png" alt="Transparent and White Zone">
+</p>
