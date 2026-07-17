@@ -31,5 +31,5 @@ The figure below illustrates the alternating stripe patterns observed within the
 *   **Transparent Zone (Slip Phase):** The clear band formed during the rapid slip phase as the tape detaches cleanly.
 
 <p align="center">
-<img width="600px" src="./Figures used in the poster/Transparent and white zone 's figure.png" alt="Transparent and White Zone">
+<img width="300px" src="./Figures used in the poster/Transparent and white zone 's figure.png" alt="Transparent and White Zone">
 </p>
