@@ -6,8 +6,8 @@ This repository is for our final project in the **Experiments on Fundamental Phy
 
 *   **Authors:**
     *   Chang-Yu Wu 
-    *   Cheng-Ta Tsai 
-    *   Chung-Rui Chang 
+    *   Zheng-Da Tsai 
+    *   Zhung-Rui Zhang 
 *   **Advisor:** Prof. Pi-Hui Tuan 
 
 ## Introduction
