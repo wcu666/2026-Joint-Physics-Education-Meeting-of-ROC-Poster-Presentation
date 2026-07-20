@@ -1,4 +1,4 @@
-# Investigating the Effect of Pulling Velocity on the Formation of Tape Stripes
+# Investigation Influences of Pulling Speed on Stripe Pattern Formation of Peeled Tape
 
 This repository is for our final project in the **Experiments on Fundamental Physics (II)** course at **National Chung Cheng University (CCU), Department of Physics**.
 
