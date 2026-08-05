@@ -1,0 +1,99 @@
+% ---------------------------------------------------------
+% 膠帶黏滑現象 - 力量與速度關係圖 (修正對稱與完美置中版)
+% ---------------------------------------------------------
+clear; clc; close all;
+
+% 1. 輸入數據
+v = [4.6250	0.9250	0.4625	0.3083	0.2313	0.2202	0.2102	0.2011	0.19271	0.18500	0.15417	0.09250	0.04625	0.03083	0.02313	0.01542	0.01321	0.01233	0.01186	0.01171	0.01165	0.01159	0.01156	0.01128	0.01076	0.01051	0.01028	0.00925];
+F = [1.5058	1.4933	1.4792	1.4202	1.46095	1.46255	1.431	1.4233	1.6325	2.93015	2.84835	2.72105	2.8608	2.8041	2.72015	2.661633333	2.5786	2.56095	2.5026	2.4228	2.4257	2.4096	2.3775	2.3582	2.2598	2.2498	2.2309	2.2271];
+
+% 2. 依照速度 (X軸) 由小到大重新排序
+[v_sorted, sort_idx] = sort(v);
+F_sorted = F(sort_idx);
+
+% 3. 建立畫布
+figure('Color', 'w', 'Position', [100, 100, 1000, 650]);
+hold on; grid on;
+
+% 4. 繪製平滑擬合趨勢線
+v_fit = logspace(log10(min(v_sorted)), log10(max(v_sorted)), 500); 
+F_fit = interp1(v_sorted, F_sorted, v_fit, 'pchip'); 
+plot(v_fit, F_fit, '-', 'Color', [0.4 0.4 0.4], 'LineWidth', 1.5, 'HandleVisibility', 'off'); 
+
+% =========================================================
+% 🎯 定義外推範圍：確保左右兩邊延伸「視覺上」一樣長
+% 這裡設定向左和向右各延伸 10 倍 (在 Log 圖上等於延伸相同的物理距離)
+extrap_factor = 10;
+v_left_limit = min(v_sorted) / extrap_factor;  
+v_right_limit = max(v_sorted) * extrap_factor; 
+% =========================================================
+
+% 🚀 高速端 (右側) 虛線理論預測
+v_last_right = v_sorted(end); 
+F_last_right = F_sorted(end);
+p_fit_right = polyfit(log10(v_sorted(end-3:end)), F_sorted(end-3:end), 1);
+tangent_slope_right = p_fit_right(1); 
+v_extrap_right = logspace(log10(v_last_right), log10(v_right_limit), 100);
+F_extrap_right = F_last_right + tangent_slope_right * (log10(v_extrap_right) - log10(v_last_right));
+plot(v_extrap_right, F_extrap_right, '--', 'Color', [0.4 0.4 0.4], 'LineWidth', 1.5, 'HandleVisibility', 'off');
+
+% 🚀 低速端 (左側) 虛線理論外推趨勢
+v_last = v_sorted(1); 
+F_last = F_sorted(1); 
+p_fit = polyfit(log10(v_sorted(1:4)), F_sorted(1:4), 1);
+tangent_slope = p_fit(1); 
+F_plateau = 1.85; 
+beta = tangent_slope / (F_last - F_plateau);
+v_extrap = logspace(log10(v_left_limit), log10(v_last), 100);
+F_extrap = F_plateau + (F_last - F_plateau) * exp(beta * (log10(v_extrap) - log10(v_last)));
+plot(v_extrap, F_extrap, '--', 'Color', [0.4 0.4 0.4], 'LineWidth', 1.5, 'HandleVisibility', 'off');
+
+% 5. 繪製真實數據的散佈點
+plot(v_sorted, F_sorted, 'o', 'Color', 'k', 'MarkerSize', 5, 'MarkerFaceColor', 'k', 'MarkerEdgeColor', 'none');
+
+% 6. 定義臨界點
+v_min = 0.01156; F_min = F(v == v_min); 
+v_max = 0.19271; F_max = F(v == v_max); 
+
+% 7. 畫出縱向紅色虛線
+xline(v_min, '--r', 'LineWidth', 1.5, 'Alpha', 0.7);
+xline(v_max, '--r', 'LineWidth', 1.5, 'Alpha', 0.7);
+
+% 8. 疊加上紅色標記點
+plot(v_min, F_min, 'ro', 'MarkerSize', 6, 'MarkerFaceColor', 'r');
+plot(v_max, F_max, 'ro', 'MarkerSize', 6, 'MarkerFaceColor', 'r');
+
+% 9. 設定 X 軸為對數座標
+set(gca, 'XScale', 'log');
+
+% 10. 調整座標軸範圍 (要在排版文字之前設定好，確保畫布邊界鎖定)
+xlim([v_left_limit, v_right_limit]); 
+ylim([1.2, 3.8]); % Y軸拉高到 3.8，留給文字非常寬敞的呼吸空間
+
+% 11. 加上三個物理區間的文字標示 (使用幾何中心點，確保在 Log 尺度下完美置中)
+y_text_pos = 3.5; % 統一的文字高度
+
+% 計算三個區間在 Log 尺度的視覺中心點：sqrt(起點 * 終點)
+pos_left_center   = sqrt(v_left_limit * v_min);
+pos_middle_center = sqrt(v_min * v_max);
+pos_right_center  = sqrt(v_max * v_right_limit);
+
+% 全部強制使用 'HorizontalAlignment', 'center'，看起來最舒服
+text(pos_left_center, y_text_pos, sprintf('Low-Speed Zone\n(Continuous White)'), ...
+    'HorizontalAlignment', 'center', 'Color', [0 0.4 0.7], 'FontSize', 12, 'FontWeight', 'bold');
+
+text(pos_middle_center, y_text_pos, sprintf('Stick-Slip\nOscillation Zone'), ...
+    'HorizontalAlignment', 'center', 'Color', [0.8 0.3 0], 'FontSize', 12, 'FontWeight', 'bold');
+
+text(pos_right_center, y_text_pos, sprintf('High-Speed Zone\n(Continuous Transparent)'), ...
+    'HorizontalAlignment', 'center', 'Color', [0 0.5 0], 'FontSize', 12, 'FontWeight', 'bold');
+
+% 12. 標題與軸標籤
+xlabel('Peel Velocity (cm/s)', 'FontSize', 14, 'FontWeight', 'bold', 'FontName', 'Times New Roman');
+ylabel('Mean Peel Force (N)', 'FontSize', 14, 'FontWeight', 'bold', 'FontName', 'Times New Roman');
+title('Force vs. Velocity: Polymeric Stick-Slip Transition', 'FontSize', 16, 'FontWeight', 'bold', 'FontName', 'Times New Roman');
+
+% 13. 全域排版微調
+set(gca, 'FontSize', 12, 'LineWidth', 1.2);
+box on;
+hold off;
